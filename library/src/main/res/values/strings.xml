@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_result_api_permission_reject_toast">授权后才能使用哦</string>
+</resources>
