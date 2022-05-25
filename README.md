@@ -1,6 +1,6 @@
 # ActivityResultApi
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.lygttpod/activity-result-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.lygttpod/activity-result-api)
+[![Maven Central](https://img.shields.io/github/v/release/lygttpod/ActivityResultApi)](https://github.com/lygttpod/ActivityResultApi/releases)
 [![API](https://img.shields.io/badge/API-16%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=16)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-ActivityResultApi-green.svg?style=true)](https://github.com/lygttpod)
 [![](https://img.shields.io/github/stars/lygttpod/ActivityResultApi.svg)](https://github.com/lygttpod/ActivityResultApi/stargazers)
