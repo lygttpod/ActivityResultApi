@@ -1,11 +1,11 @@
 package com.lygttpod.android.activity.result.api.observer
 
-import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 
-class PermissionsObserver(activity: ComponentActivity) :
-    BaseObserver<Array<String>, Map<String, Boolean>>(activity) {
+class PermissionsApi(activityResultCaller: ActivityResultCaller) :
+    BaseApi<Array<String>, Map<String, Boolean>>(activityResultCaller) {
     override fun createActivityResultContract(): ActivityResultContract<Array<String>, Map<String, Boolean>> {
         return ActivityResultContracts.RequestMultiplePermissions()
     }

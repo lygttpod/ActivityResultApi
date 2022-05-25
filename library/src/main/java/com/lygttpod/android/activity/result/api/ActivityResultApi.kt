@@ -1,106 +1,147 @@
 package com.lygttpod.android.activity.result.api
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCaller
+import androidx.fragment.app.Fragment
 import com.lygttpod.android.activity.result.api.config.CropConfig
 import com.lygttpod.android.activity.result.api.e.ResultApiType
-import com.lygttpod.android.activity.result.api.ktx.toast
+import com.lygttpod.android.activity.result.api.ktx.showToast
 import com.lygttpod.android.activity.result.api.observer.*
 import java.io.File
 
 class ActivityResultApi {
 
-    private var act: ComponentActivity? = null
+    private var context: Context? = null
 
-    private var permissionObs: PermissionObserver? = null
-    private var permissionsObs: PermissionsObserver? = null
-    private var takeCameraFileObs: TakeCameraFileObserver? = null
-    private var takeCameraBitmapObs: TakeCameraBitmapObserver? = null
-    private var takeTakePictureCropObs: TakePictureCropObserver? = null
-    private var takePhotoObs: TakePhotoObserver? = null
-    private var startActivityForResultObs: StartActivityForResultObserver? = null
+    private var permissionApi: PermissionApi? = null
+    private var permissionsApi: PermissionsApi? = null
+    private var takeCameraApi: TakeCameraApi? = null
+    private var takeCameraBitmapApi: TakeCameraBitmapApi? = null
+    private var takePictureCropApi: TakePictureCropApi? = null
+    private var takePhotoApi: TakePhotoApi? = null
+    private var startActivityForResultApi: StartActivityForResultApi? = null
 
     companion object {
-        fun createResultApi(activity: ComponentActivity, resultApiType: List<ResultApiType>): ActivityResultApi {
+
+        fun createResultApi(
+            activityResultCaller: ActivityResultCaller,
+            resultApiType: List<ResultApiType>
+        ): ActivityResultApi {
             val api = ActivityResultApi()
-            api.act = activity
-            resultApiType.forEach {
-                when (it) {
-                    ResultApiType.PERMISSION -> api.permissionObs = PermissionObserver(activity)
-                    ResultApiType.PERMISSIONS -> api.permissionsObs = PermissionsObserver(activity)
-                    ResultApiType.TAKE_CAMERA_FILE -> api.takeCameraFileObs = TakeCameraFileObserver(activity)
-                    ResultApiType.TAKE_CAMERA_BITMAP -> api.takeCameraBitmapObs = TakeCameraBitmapObserver(activity)
-                    ResultApiType.TAKE_PHOTO -> api.takePhotoObs = TakePhotoObserver(activity)
-                    ResultApiType.TAKE_PICTURE_CROP -> api.takeTakePictureCropObs = TakePictureCropObserver(activity)
-                    ResultApiType.START_ACTIVITY_FOR_RESULT -> api.startActivityForResultObs = StartActivityForResultObserver(activity)
-                }
+            when (activityResultCaller) {
+                is ComponentActivity -> api.context = activityResultCaller
+                is Fragment -> api.context = activityResultCaller.context
             }
+            create(api, activityResultCaller, resultApiType)
             return api
         }
+
+        private fun create(
+            api: ActivityResultApi,
+            activityResultCaller: ActivityResultCaller,
+            resultApiType: List<ResultApiType>
+        ) {
+            resultApiType.forEach {
+                when (it) {
+                    ResultApiType.PERMISSION -> api.permissionApi =
+                        PermissionApi(activityResultCaller)
+                    ResultApiType.PERMISSIONS -> api.permissionsApi =
+                        PermissionsApi(activityResultCaller)
+                    ResultApiType.TAKE_CAMERA -> api.takeCameraApi =
+                        TakeCameraApi(activityResultCaller)
+                    ResultApiType.TAKE_CAMERA_BITMAP -> api.takeCameraBitmapApi =
+                        TakeCameraBitmapApi(activityResultCaller)
+                    ResultApiType.TAKE_PHOTO -> api.takePhotoApi =
+                        TakePhotoApi(activityResultCaller)
+                    ResultApiType.TAKE_PICTURE_CROP -> api.takePictureCropApi =
+                        TakePictureCropApi(activityResultCaller)
+                    ResultApiType.START_ACTIVITY_FOR_RESULT -> api.startActivityForResultApi =
+                        StartActivityForResultApi(activityResultCaller)
+                }
+            }
+        }
+
     }
 
-    private fun checkInitialized(observer: BaseObserver<*, *>?) {
-        if (observer == null) {
-            Log.e("ActivityResultApi", "请先调用createResultApi添加${getApiName(observer)}类型")
+    private fun checkInitialized(api: BaseApi<*, *>?) {
+        if (api == null) {
+            Log.e("ActivityResultApi", "请先调用createResultApi添加${getApiName(api)}类型")
             if (BuildConfig.DEBUG) {
-                act?.toast("请先调用createResultApi添加${getApiName(observer)}类型")
+                context?.showToast("请先调用createResultApi添加${getApiName(api)}类型")
             }
         }
     }
 
-    private fun getApiName(observer: BaseObserver<*, *>?): String {
-        return when (observer) {
-            is PermissionObserver -> "ResultApiType.PERMISSION"
-            is PermissionsObserver -> "ResultApiType.PERMISSIONS"
-            is TakeCameraFileObserver -> "ResultApiType.TAKE_CAMERA_FILE"
-            is TakeCameraBitmapObserver -> "ResultApiType.TAKE_CAMERA_BITMAP"
-            is TakePhotoObserver -> "ResultApiType.TAKE_PHOTO"
-            is StartActivityForResultObserver -> "ResultApiType.START_ACTIVITY_FOR_RESULT"
-            else -> "所需功能"
+    private fun getApiName(api: BaseApi<*, *>?): String {
+        return when (api) {
+            is PermissionApi -> "ResultApiType.PERMISSION"
+            is PermissionsApi -> "ResultApiType.PERMISSIONS"
+            is TakeCameraApi -> "ResultApiType.TAKE_CAMERA"
+            is TakeCameraBitmapApi -> "ResultApiType.TAKE_CAMERA_BITMAP"
+            is TakePhotoApi -> "ResultApiType.TAKE_PHOTO"
+            is TakePictureCropApi -> "ResultApiType.TAKE_PICTURE_CROP"
+            is StartActivityForResultApi -> "ResultApiType.START_ACTIVITY_FOR_RESULT"
+            else -> "${api?.toString()}"
         }
     }
 
     fun permission(permission: String, result: ((Boolean) -> Unit)?) {
-        checkInitialized(permissionObs)
-        permissionObs?.launch(permission, result)
+        checkInitialized(permissionApi)
+        permissionApi?.launch(permission, result)
     }
 
-    fun permissions(permissions: Array<String>, result: ((Boolean) -> Unit)?) {
-        checkInitialized(permissionsObs)
-        permissionsObs?.launch2(permissions, result)
+    fun permissions(permissions: Array<String>, result: ((Map<String, Boolean>) -> Unit)?) {
+        checkInitialized(permissionsApi)
+        permissionsApi?.launch(permissions, result)
     }
 
-    fun takeCameraFile(file: File, uri: Uri? = null, result: ((File) -> Unit)?) {
-        checkInitialized(takeCameraFileObs)
-        takeCameraFileObs?.launch2(file, uri, result)
+    fun permissions2(permissions: Array<String>, result: ((Boolean) -> Unit)?) {
+        checkInitialized(permissionsApi)
+        permissionsApi?.launch2(permissions, result)
     }
 
-    fun takeCameraBitmap(result: ((Bitmap) -> Unit)?) {
-        checkInitialized(takeCameraBitmapObs)
-        takeCameraBitmapObs?.launch2(result)
+    fun takeCameraFile(file: File, result: ((File) -> Unit)?) {
+        checkInitialized(takeCameraApi)
+        takeCameraApi?.launch2(file, result)
     }
 
-    fun takePhoto(result: ((Intent) -> Unit)?) {
-        checkInitialized(takeCameraBitmapObs)
-        takePhotoObs?.launch2(result)
+    fun takeCameraUri(uri: Uri, result: ((Uri) -> Unit)?) {
+        checkInitialized(takeCameraApi)
+        takeCameraApi?.launch2(uri, result)
+    }
+
+    fun takeCameraBitmap(result: ((Bitmap?) -> Unit)?) {
+        checkInitialized(takeCameraBitmapApi)
+        takeCameraBitmapApi?.launch2(result)
+    }
+
+    fun takePhoto(result: ((Intent?) -> Unit)?) {
+        checkInitialized(takeCameraBitmapApi)
+        takePhotoApi?.launch2(result)
     }
 
     fun takePictureCrop(cropConfig: CropConfig, result: ((Uri?) -> Unit)?) {
-        checkInitialized(takeTakePictureCropObs)
-        takeTakePictureCropObs?.launch2(cropConfig, result)
+        checkInitialized(takePictureCropApi)
+        takePictureCropApi?.launch2(cropConfig, result)
     }
 
-    fun startActivityForResult(intent: Intent, result: ((Intent) -> Unit)?) {
-        checkInitialized(startActivityForResultObs)
-        startActivityForResultObs?.launch2(intent, result)
+    fun startActivityForResult(intent: Intent, result: ((Intent?) -> Unit)?) {
+        checkInitialized(startActivityForResultApi)
+        startActivityForResultApi?.launch2(intent, result)
     }
 
-    fun takeCameraFileWithPermission(file: File, uri: Uri? = null, permissionResult: ((Boolean) -> Unit)? = null, result: ((File) -> Unit)?) {
-        permissions(
+    fun takeCameraWithPermission(
+        file: File,
+        permissionResult: ((Boolean) -> Unit)? = null,
+        result: ((File) -> Unit)?
+    ) {
+        permissions2(
             arrayOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -109,36 +150,65 @@ class ActivityResultApi {
         ) {
             permissionResult?.invoke(it)
             if (it) {
-                takeCameraFile(file, uri, result)
+                takeCameraFile(file, result)
             } else {
                 if (permissionResult == null) {
-                    act?.let { activity -> activity.toast(activity.getString(R.string.activity_result_api_permission_reject_toast)) }
+                    context?.let { context -> context.showToast(context.getString(R.string.activity_result_api_permission_reject_toast)) }
                 }
             }
         }
     }
 
-    fun takeCameraBitmapWithPermission(permissionResult: ((Boolean) -> Unit)? = null, result: ((Bitmap) -> Unit)?) {
+    fun takeCameraWithPermission(
+        uri: Uri,
+        permissionResult: ((Boolean) -> Unit)? = null,
+        result: ((Uri) -> Unit)?
+    ) {
+        permissions2(
+            arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        ) {
+            permissionResult?.invoke(it)
+            if (it) {
+                takeCameraUri(uri, result)
+            } else {
+                if (permissionResult == null) {
+                    context?.let { context -> context.showToast(context.getString(R.string.activity_result_api_permission_reject_toast)) }
+                }
+            }
+        }
+    }
+
+    fun takeCameraBitmapWithPermission(
+        permissionResult: ((Boolean) -> Unit)? = null,
+        result: ((Bitmap?) -> Unit)?
+    ) {
         permission(Manifest.permission.CAMERA) {
             permissionResult?.invoke(it)
             if (it) {
                 takeCameraBitmap(result)
             } else {
                 if (permissionResult == null) {
-                    act?.let { activity -> activity.toast(activity.getString(R.string.activity_result_api_permission_reject_toast)) }
+                    context?.let { context -> context.showToast(context.getString(R.string.activity_result_api_permission_reject_toast)) }
                 }
             }
         }
     }
 
-    fun takePhotoWithPermission(permissionResult: ((Boolean) -> Unit)? = null, result: ((Intent) -> Unit)?) {
+    fun takePhotoWithPermission(
+        permissionResult: ((Boolean) -> Unit)? = null,
+        result: ((Intent?) -> Unit)?
+    ) {
         permission(Manifest.permission.READ_EXTERNAL_STORAGE) {
             permissionResult?.invoke(it)
             if (it) {
                 takePhoto(result)
             } else {
                 if (permissionResult == null) {
-                    act?.let { activity -> activity.toast(activity.getString(R.string.activity_result_api_permission_reject_toast)) }
+                    context?.let { context -> context.showToast(context.getString(R.string.activity_result_api_permission_reject_toast)) }
                 }
             }
         }

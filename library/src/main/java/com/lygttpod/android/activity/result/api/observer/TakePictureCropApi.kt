@@ -1,16 +1,18 @@
 package com.lygttpod.android.activity.result.api.observer
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import com.lygttpod.android.activity.result.api.config.CropConfig
 import com.lygttpod.android.activity.result.api.ktx.createCropIntent
 
-class TakePictureCropObserver(activity: ComponentActivity) :
-    BaseObserver<Intent, ActivityResult>(activity) {
+class TakePictureCropApi(activityResultCaller: ActivityResultCaller) :
+    BaseApi<Intent, ActivityResult>(activityResultCaller) {
 
     override fun createActivityResultContract(): ActivityResultContract<Intent, ActivityResult> {
         return ActivityResultContracts.StartActivityForResult()
@@ -18,7 +20,9 @@ class TakePictureCropObserver(activity: ComponentActivity) :
 
     fun launch2(cropConfig: CropConfig, result: ((Uri?) -> Unit)?) {
         launch(createCropIntent(cropConfig)) {
-            result?.invoke(cropConfig.outputUri)
+            if (it.resultCode == Activity.RESULT_OK) {
+                result?.invoke(cropConfig.outputUri)
+            }
         }
     }
 }

@@ -1,10 +1,20 @@
 package com.lygttpod.android.activity.result.api.ktx
 
-import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 
-fun Fragment.toast(msg: String?) {
-    if (msg.isNullOrBlank()) return
-    val act = this.activity ?: return
-    Toast.makeText(act, msg, Toast.LENGTH_SHORT).show()
+fun Fragment.showToast(msg: String?) {
+    this.context?.showToast(msg)
+}
+
+fun Fragment.showToast(@StringRes msg: Int) {
+    this.context?.showToast(msg)
+}
+
+fun Fragment.showLongToast(msg: String?) {
+    this.context?.showLongToast(msg)
+}
+
+fun Fragment.showLongToast(@StringRes msg: Int) {
+    this.context?.showLongToast(msg)
 }
